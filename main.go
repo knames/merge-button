@@ -15,7 +15,7 @@ type Configuration struct {
 }
 
 func main() {
-	fmt.Printf("yolo \n")
+	fmt.Printf("You only yolo once \n")
 
 	repos := fetchRepos()
 	printRepos(repos)
