@@ -1,7 +1,6 @@
 package main
 
 import "fmt"
-//import "github.com/google/go-querystring/query"
 import "github.com/google/go-github/github"
 import "golang.org/x/oauth2"
 import "context"
@@ -16,9 +15,13 @@ type Configuration struct {
 }
 
 func main() {
-	fmt.Printf("Hello, world.\n")
-	//client := github.NewClient(nil)
+	fmt.Printf("yolo \n")
 
+	repos := fetchRepos()
+	printRepos(repos)
+}
+
+func fetchRepos() []*github.Repository {
 	config := readToken()
 
 	ctx := context.Background()
@@ -32,14 +35,14 @@ func main() {
 	// list all repositories for the authenticated user
 	repos, _, err := client.Repositories.List(ctx, config.User, nil)
 
-	printRepos(repos)
-
 	if err != nil {
 		// wut
 	}
 	if repos != nil {
 		// wut
 	}
+
+	return repos
 }
 
 func readToken() Configuration {
