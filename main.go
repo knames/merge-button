@@ -1,48 +1,67 @@
+// Copyright 2015 The go-github AUTHORS. All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
+// The basicauth command demonstrates using the github.BasicAuthTransport,
+// including handling two-factor authentication. This won't currently work for
+// accounts that use SMS to receive one-time passwords.
 package main
 
-import "fmt"
-import "github.com/google/go-github/github"
-import "golang.org/x/oauth2"
-import "context"
 import (
+	"context"
 	"encoding/json"
+	"fmt"
 	"os"
+
+	"github.com/google/go-github/github"
+	"github.com/fatih/color"
+	"golang.org/x/oauth2"
+	"sync"
 )
 
 type Configuration struct {
 	Token string
-	User string
+	User  string
 }
 
-func main() {
-	fmt.Printf("You only yolo once \n")
-
-	repos := fetchRepos()
-	printRepos(repos)
+func printDoge() {
+	fmt.Println("░▄░░░░░░░░░░░░░░▄")
+	fmt.Println("░░░░░░░░▌▒█░░░░░░░░░░░▄▀▒▌")
+	fmt.Println("░░░░░░░░▌▒▒█░░░░░░░░▄▀▒▒▒▐")
+	fmt.Println("░░░░░░░▐▄▀▒▒▀▀▀▀▄▄▄▀▒▒▒▒▒▐")
+	fmt.Println("░░░░░▄▄▀▒░▒▒▒▒▒▒▒▒▒█▒▒▄█▒▐")
+	fmt.Println("░░░▄▀▒▒▒░░░▒▒▒░░░▒▒▒▀██▀▒▌")
+	fmt.Println("░░▐▒▒▒▄▄▒▒▒▒░░░▒▒▒▒▒▒▒▀▄▒▒▌")
+	fmt.Println("░░▌░░▌█▀▒▒▒▒▒▄▀█▄▒▒▒▒▒▒▒█▒▐")
+	fmt.Println("░▐░░░▒▒▒▒▒▒▒▒▌██▀▒▒░░░▒▒▒▀▄▌")
+	fmt.Println("░▌░▒▄██▄▒▒▒▒▒▒▒▒▒░░░░░░▒▒▒▒▌")
+	fmt.Println("▀▒▀▐▄█▄█▌▄░▀▒▒░░░░░░░░░░▒▒▒")
 }
 
-func fetchRepos() []*github.Repository {
-	config := readToken()
-
-	ctx := context.Background()
-	ts := oauth2.StaticTokenSource(
-		&oauth2.Token{AccessToken: config.Token},
-	)
-	tc := oauth2.NewClient(ctx, ts)
-
-	client := github.NewClient(tc)
-
-	// list all repositories for the authenticated user
-	repos, _, err := client.Repositories.List(ctx, config.User, nil)
-
-	if err != nil {
-		// wut
-	}
-	if repos != nil {
-		// wut
-	}
-
-	return repos
+func printTitle()  {
+	fmt.Print(`      /$$$$$$            /$$ /$$,
+     /$$__  $$          |__/| $$
+    | $$  \ $$  /$$$$$$  /$$| $$  /$$$$$$
+    | $$$$$$$$ /$$__  $$| $$| $$ /$$__  $$
+    | $$__  $$| $$  \ $$| $$| $$| $$$$$$$$
+    | $$  | $$| $$  | $$| $$| $$| $$_____/
+    | $$  | $$|  $$$$$$$| $$| $$|  $$$$$$$
+    |__/  |__/ \____  $$|__/|__/ \_______/
+               /$$  \ $$
+              |  $$$$$$/
+               \______/
+     /$$      /$$
+    | $$$    /$$$
+    | $$$$  /$$$$  /$$$$$$   /$$$$$$  /$$$$$$   /$$$$$$
+    | $$ $$/$$ $$ /$$__  $$ /$$__  $$/$$__  $$ /$$__  $$
+    | $$  $$$| $$| $$$$$$$$| $$  \__/ $$  \ $$| $$$$$$$$
+    | $$\  $ | $$| $$_____/| $$     | $$  | $$| $$_____/
+    | $$ \/  | $$|  $$$$$$$| $$     |  $$$$$$$|  $$$$$$$
+    |__/     |__/ \_______/|__/      \____  $$ \_______/
+                                     /$$  \ $$
+                                    |  $$$$$$/
+                                     \______/`)
 }
 
 func readToken() Configuration {
@@ -58,13 +77,45 @@ func readToken() Configuration {
 	}
 	if len(configuration.User) < 1 {
 		fmt.Printf("User not imported or empty.")
+		fmt.Printf("\nerror: %v\n", err)
 	}
 	return configuration
 }
 
-func printRepos(repos []*github.Repository) {
-	for _, v:= range repos {
-		fmt.Println(*v.Name)
-	}
+func main() {
+	//ctx, client := getClient()
+	//prs, err := getPullRequests(client, ctx)
+
+	//if err != nil {
+	//	fmt.Printf("\nerror: %v\n", err)
+	//	return
+	//}
+
+	printTitle()
+
+	fmt.Println("\n-----------------------------------------------------------")
+	color.Cyan("    Please press button to reduce Pull Request Backblog")
+	fmt.Println("-----------------------------------------------------------")
+
+	var wg sync.WaitGroup
+	wg.Add(1)
+	wg.Wait()
+
 }
 
+func getPullRequests(client *github.Client, ctx context.Context) ([]*github.PullRequest, error) {
+	prs, _, err := client.PullRequests.List(ctx, "7shifts", "webapp", nil)
+
+	return prs, err
+}
+
+func getClient() (context.Context, *github.Client) {
+	config := readToken()
+	ctx := context.Background()
+	ts := oauth2.StaticTokenSource(
+		&oauth2.Token{AccessToken: config.Token},
+	)
+	tc := oauth2.NewClient(ctx, ts)
+	client := github.NewClient(tc)
+	return ctx, client
+}
