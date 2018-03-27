@@ -17,13 +17,17 @@ import (
 	"github.com/google/go-github/github"
 	"github.com/fatih/color"
 	"golang.org/x/oauth2"
-	"sync"
+	"github.com/stianeikeland/go-rpio"
+	"math/rand"
+	"time"
 )
 
 type Configuration struct {
 	Token string
 	User  string
 }
+
+var titles []*string
 
 func printDoge() {
 	fmt.Println("░▄░░░░░░░░░░░░░░▄")
@@ -39,7 +43,7 @@ func printDoge() {
 	fmt.Println("▀▒▀▐▄█▄█▌▄░▀▒▒░░░░░░░░░░▒▒▒")
 }
 
-func printTitle()  {
+func printTitle() {
 	fmt.Print(`      /$$$$$$            /$$ /$$,
      /$$__  $$          |__/| $$
     | $$  \ $$  /$$$$$$  /$$| $$  /$$$$$$
@@ -82,8 +86,49 @@ func readToken() Configuration {
 	return configuration
 }
 
+func delete(i int) {
+	titles[i] = titles[len(titles)-1] // Copy last element to index i.
+	titles[len(titles)-1] = nil  // Erase last element (write zero value).
+	titles = titles[:len(titles)-1]   // Truncate slice.
+}
+
+func merge() {
+	idx := rand.Intn(len(titles))
+
+	title := titles[idx]
+	delete(idx)
+
+	fmt.Printf("MERGED: %s\n", *title)
+
+	listenToPin()
+}
+
+func listenToPin() {
+	if err := rpio.Open(); err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
+	defer rpio.Close()
+
+	pin := rpio.Pin(6)
+	pin.Input()
+	pin.PullDown() // Need to reduce the voltage because our push button will send 3.3v into pin
+
+	for {
+		if s := pin.Read(); s == rpio.High {
+			//fmt.Println("HIGH")
+			// We pushed the button so call merge!
+			merge()
+		}
+
+	}
+
+}
+
 func main() {
-	//ctx, client := getClient()
+	rand.Seed(time.Now().Unix())
+	ctx, client := getClient()
 	//prs, err := getPullRequests(client, ctx)
 
 	//if err != nil {
@@ -93,20 +138,27 @@ func main() {
 
 	printTitle()
 
+	t, _ := getPullRequests(client, ctx)
+	titles = t
+
 	fmt.Println("\n-----------------------------------------------------------")
-	color.Cyan("    Please press button to reduce Pull Request Backblog")
+	color.Cyan("    Please press button to reduce Pull Request Backlog")
 	fmt.Println("-----------------------------------------------------------")
 
-	var wg sync.WaitGroup
-	wg.Add(1)
-	wg.Wait()
+	listenToPin()
 
 }
 
-func getPullRequests(client *github.Client, ctx context.Context) ([]*github.PullRequest, error) {
+func getPullRequests(client *github.Client, ctx context.Context) ([]*string, error) {
 	prs, _, err := client.PullRequests.List(ctx, "7shifts", "webapp", nil)
 
-	return prs, err
+	titles := make([]*string, len(prs))
+
+	for _, pr := range prs {
+		titles = append(titles, pr.Title)
+	}
+
+	return titles, err
 }
 
 func getClient() (context.Context, *github.Client) {
