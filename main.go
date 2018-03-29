@@ -86,9 +86,9 @@ func readToken() Configuration {
 	return configuration
 }
 
-func delete(i int) {
+func xdelete(i int) {
 	titles[i] = titles[len(titles)-1] // Copy last element to index i.
-	titles[len(titles)-1] = nil  // Erase last element (write zero value).
+	titles[len(titles)-1] = nil       // Erase last element (write zero value).
 	titles = titles[:len(titles)-1]   // Truncate slice.
 }
 
@@ -98,8 +98,8 @@ func merge() {
 	title := titles[idx]
 	delete(idx)
 
-	fmt.Printf("MERGED: %s\n", *title)
-
+	fmt.Printf("MERGED: %v\n", *title)
+	time.Sleep(1 * time.Second)
 	listenToPin()
 }
 
