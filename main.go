@@ -20,6 +20,7 @@ import (
 	"github.com/stianeikeland/go-rpio"
 	"math/rand"
 	"time"
+	"bufio"
 )
 
 type Configuration struct {
@@ -98,7 +99,7 @@ func merge() {
 	title := titles[idx]
 	delete(idx)
 
-	fmt.Printf("MERGED: %v\n", *title)
+	fmt.Printf("MERGED: %+s\n", *title)
 	time.Sleep(1 * time.Second)
 	listenToPin()
 }
@@ -124,6 +125,19 @@ func listenToPin() {
 
 	}
 
+}
+
+func listenToFinger() {
+	reader := bufio.NewReader(os.Stdin)
+	fmt.Print("Hit enter")
+
+
+	for {
+		reader.ReadString('\n')
+		break;
+	}
+
+	merge()
 }
 
 func main() {
