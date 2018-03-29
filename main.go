@@ -86,7 +86,7 @@ func readToken() Configuration {
 	return configuration
 }
 
-func xdelete(i int) {
+func delete(i int) {
 	titles[i] = titles[len(titles)-1] // Copy last element to index i.
 	titles[len(titles)-1] = nil       // Erase last element (write zero value).
 	titles = titles[:len(titles)-1]   // Truncate slice.
