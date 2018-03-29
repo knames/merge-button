@@ -98,6 +98,10 @@ func merge(pin rpio.Pin) {
 	title := titles[idx]
 	delete(idx)
 
+	if title == nil {
+		merge(pin)
+	}
+
 	fmt.Printf("MERGED: %+s\n", *title)
 	time.Sleep(1 * time.Second)
 	listenToPin(pin)
