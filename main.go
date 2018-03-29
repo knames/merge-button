@@ -110,7 +110,7 @@ func merge(pin rpio.Pin) {
 	printDoge()
 	fmt.Printf("MERGED: %+s\n", *title)
 
-	time.Sleep(3000 * time.Millisecond)
+	time.Sleep(4500 * time.Millisecond)
 	printTitle()
 	listenToPin(pin)
 }
