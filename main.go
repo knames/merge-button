@@ -20,7 +20,6 @@ import (
 	"github.com/stianeikeland/go-rpio"
 	"math/rand"
 	"time"
-	"bufio"
 )
 
 type Configuration struct {
@@ -93,7 +92,7 @@ func delete(i int) {
 	titles = titles[:len(titles)-1]   // Truncate slice.
 }
 
-func merge() {
+func merge(pin rpio.Pin) {
 	idx := rand.Intn(len(titles))
 
 	title := titles[idx]
@@ -101,44 +100,35 @@ func merge() {
 
 	fmt.Printf("MERGED: %+s\n", *title)
 	time.Sleep(1 * time.Second)
-	listenToPin()
+	listenToPin(pin)
 }
 
-func listenToPin() {
-	if err := rpio.Open(); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
+func listenToPin(pin rpio.Pin) {
 
-	defer rpio.Close()
-
-	pin := rpio.Pin(6)
-	pin.Input()
-	pin.PullDown() // Need to reduce the voltage because our push button will send 3.3v into pin
 
 	for {
 		if s := pin.Read(); s == rpio.High {
 			//fmt.Println("HIGH")
 			// We pushed the button so call merge!
-			merge()
+			merge(pin)
 		}
 
 	}
 
 }
 
-func listenToFinger() {
-	reader := bufio.NewReader(os.Stdin)
-	fmt.Print("Hit enter")
-
-
-	for {
-		reader.ReadString('\n')
-		break;
-	}
-
-	merge()
-}
+//func listenToFinger() {
+//	reader := bufio.NewReader(os.Stdin)
+//	fmt.Print("Hit enter")
+//
+//
+//	for {
+//		reader.ReadString('\n')
+//		break;
+//	}
+//
+//	merge()
+//}
 
 func main() {
 	rand.Seed(time.Now().Unix())
@@ -150,6 +140,17 @@ func main() {
 	//	return
 	//}
 
+	if err := rpio.Open(); err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
+	defer rpio.Close()
+
+	pin := rpio.Pin(6)
+	pin.Input()
+	pin.PullDown() // Need to reduce the voltage because our push button will send 3.3v into pin
+
 	printTitle()
 
 	t, _ := getPullRequests(client, ctx)
@@ -159,7 +160,7 @@ func main() {
 	color.Cyan("    Please press button to reduce Pull Request Backlog")
 	fmt.Println("-----------------------------------------------------------")
 
-	listenToPin()
+	listenToPin(pin)
 
 }
 
