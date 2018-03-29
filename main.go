@@ -13,7 +13,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-
+	"os/exec"
 	"github.com/google/go-github/github"
 	"github.com/fatih/color"
 	"golang.org/x/oauth2"
@@ -30,7 +30,7 @@ type Configuration struct {
 var titles []*string
 
 func printDoge() {
-	fmt.Println("░▄░░░░░░░░░░░░░░▄")
+	fmt.Println("        ░▄░░░░░░░░░░░░░░▄")
 	fmt.Println("░░░░░░░░▌▒█░░░░░░░░░░░▄▀▒▌")
 	fmt.Println("░░░░░░░░▌▒▒█░░░░░░░░▄▀▒▒▒▐")
 	fmt.Println("░░░░░░░▐▄▀▒▒▀▀▀▀▄▄▄▀▒▒▒▒▒▐")
@@ -44,6 +44,7 @@ func printDoge() {
 }
 
 func printTitle() {
+	clearShit()
 	fmt.Print(`      /$$$$$$            /$$ /$$,
      /$$__  $$          |__/| $$
     | $$  \ $$  /$$$$$$  /$$| $$  /$$$$$$
@@ -66,6 +67,10 @@ func printTitle() {
                                      /$$  \ $$
                                     |  $$$$$$/
                                      \______/`)
+	fmt.Println("\n-----------------------------------------------------------")
+	color.Cyan("    Please press button to reduce Pull Request Backlog")
+	fmt.Println("-----------------------------------------------------------")
+
 }
 
 func readToken() Configuration {
@@ -101,11 +106,21 @@ func merge(pin rpio.Pin) {
 	if title == nil {
 		merge(pin)
 	}
-
+	clearShit()
+	printDoge()
 	fmt.Printf("MERGED: %+s\n", *title)
-	time.Sleep(250 * time.Millisecond)
+
+	time.Sleep(3000 * time.Millisecond)
+	printTitle()
 	listenToPin(pin)
 }
+
+func clearShit() {
+	c := exec.Command("clear")
+	c.Stdout = os.Stdout
+	c.Run()
+}
+
 
 func listenToPin(pin rpio.Pin) {
 
@@ -155,15 +170,9 @@ func main() {
 	pin.Input()
 	pin.PullDown() // Need to reduce the voltage because our push button will send 3.3v into pin
 
-	printTitle()
-
 	t, _ := getPullRequests(client, ctx)
 	titles = t
-
-	fmt.Println("\n-----------------------------------------------------------")
-	color.Cyan("    Please press button to reduce Pull Request Backlog")
-	fmt.Println("-----------------------------------------------------------")
-
+	printTitle()
 	listenToPin(pin)
 
 }
